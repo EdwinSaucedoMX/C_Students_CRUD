@@ -1,0 +1,5 @@
+nombre      char    20  Nombre_del_alumno_s/apellido
+clave       short   1   Clave_unica_del_alumno
+carrera     char    30  Carrera_del_alumno
+generacion  short   1   Año_de_ingreso_a_la_universidad
+promedio    float   1   Promedio_general_del_alumno
