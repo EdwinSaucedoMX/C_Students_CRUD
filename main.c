@@ -115,7 +115,8 @@ void search_name(bool *db){
 
 
     while(!feof(read)){
-        fscanf(read, "%s%d%s%d%f\n", student.name, &student.key, student.bachelor, &student.year, &student.average);
+        fread(&student, sizeof(student_t), 1, read);
+        fscanf(read, "\n");
 
         if(strcmp(student.name, name) == 0){
 
@@ -163,10 +164,11 @@ void search_bachelor(bool *db){
 
 
     while(!feof(read)){
-        fscanf(read, "%s%d%s%d%f\n", student.name, &student.key, student.bachelor, &student.year, &student.average);
-
+        //fscanf(read, "%s%d%s%d%f\n", student.name, &student.key, student.bachelor, &student.year, &student.average);
+        fread(&student, sizeof(student_t), 1, read);
+        fscanf(read, "\n");
         if(strcmp(student.bachelor, name) == 0){
-
+    
             //fprintf(write, "%s  %d  %s  %d  %.2f\n", student.name, student.key, student.bachelor, student.year, student.average);
 
             fwrite(&student, sizeof(student_t), 1, write);
@@ -209,7 +211,9 @@ void search_year(bool *db){
 
     printf("\nEstudiantes de %d\n", year);
     while(!feof(read)){
-        fscanf(read, "%s%d%s%d%f\n", student.name, &student.key, student.bachelor, &student.year, &student.average);
+        //fscanf(read, "%s%d%s%d%f\n", student.name, &student.key, student.bachelor, &student.year, &student.average);
+        fread(&student, sizeof(student_t), 1, read);
+        fscanf(read, "\n");
 
         if(student.year == year){
             //fprintf(write, "%s  %d  %s  %d  %.2f\n", student.name, student.key, student.bachelor, student.year, student.average);
@@ -255,15 +259,17 @@ void search_average(bool *db){
 
     printf("\nEstudiantes con promedio igual o mayor a %.2f\n", min);
     while(!feof(read)){
-        fscanf(read, "%s%d%s%d%f\n", student.name, &student.key, student.bachelor, &student.year, &student.average);
+        //fscanf(read, "%s%d%s%d%f\n", student.name, &student.key, student.bachelor, &student.year, &student.average);
+        fread(&student, sizeof(student_t), 1, read);
+        fscanf(read, "\n");
 
         if((int) student.average >= (int) min){
             //fprintf(write, "%s  %d  %s  %d  %.2f\n", student.name, student.key, student.bachelor, student.year, student.average);
             fwrite(&student, sizeof(student_t), 1, write);
             printf("%s  %d  %s  %d  %.2f\n", student.name, student.key, student.bachelor, student.year, student.average);
-        
             found = true;
         }
+
     }
 
     if(!found){
@@ -286,10 +292,11 @@ void save_data(bool db){
 
     while(!feof(read)){
         
-        fscanf(read, "%s%d%s%d%f\n", student.name, &student.key, student.bachelor, &student.year, &student.average);
+        //fscanf(read, "%s%d%s%d%f\n", student.name, &student.key, student.bachelor, &student.year, &student.average);
+        fread(&student, sizeof(student_t), 1, read);
         //fprintf(write, "%s  %d  %s  %d  %.2f\n", student.name, student.key, student.bachelor, student.year, student.average);
         fwrite(&student, sizeof(student_t), 1, write);
-
+        fscanf(read, "\n");
     }
 
     fclose(read);
