@@ -20,6 +20,7 @@ void search_average(bool *db);
 void save_data(bool db);
 void print_db();
 void add_student();
+void remove_student();
 
 int main(){
 
@@ -32,44 +33,56 @@ int option;
 option = 1;
 bool database = true;
 
-while(option){
-    printf("\n0 : Salir\n1 : Buscar por Carrera\n2 : Buscar por Año\n3 : Buscar por Promedio\n4 : Buscar por nombre\n6 : Imprimir Alumnos\n7 : Reiniciar Filtro de Busqueda\n\n");
+while(option != 8){
+    printf("\n%s\n1 : Buscar por Carrera\n2 : Buscar por Año\n3 : Buscar por Promedio\n4 : Buscar por nombre\n5 : Agregar Alumno\n6 : Eliminar Alumno\n7 : Imprimir Lista de Alumnos\n8 : Salir\n\n", database ? "" : "0 : Reiniciar Filtro de Busqueda");
 
     scanf("%d", &option);
 
     printf("\n");
 
     switch(option){
-        case 0: 
-            printf("Cerrando...\n");
+        case 0:
+            printf("Reiniciando el Filtro\n");
+            database = true;
             continue;
+
         case 1:
             printf("Buscar por Carrera\n");
             search_bachelor(&database);
             continue;
+
         case 2:
             printf("Buscar por Año\n");
             search_year(&database);
             continue;
+
         case 3:
             printf("Buscar por Promedio\n");
             search_average(&database);
             continue;
+
         case 4:
             printf("Buscar por Nombre\n");
             search_name(&database);
             continue;
+
         case 5:
             printf("Agregar Alumno\n");
             add_student();
             continue;
+
         case 6:
+            printf("Eliminar Alumno\n");
+            remove_student();
+            continue;
+
+        case 7:
             printf("Imprimir todos los alumnos\n");
             print_db();
             continue;
-        case 7:
-            printf("Reiniciando el Filtro\n");
-            database = true;
+
+        case 8: 
+            printf("Cerrando...\n");
             continue;
         default:
             printf("Opcion no valida\n");
@@ -379,4 +392,29 @@ void remove_student(){
     }else{
         printf("\nNo se encontraron estudiantes\n");
     }
+}
+
+void order_list(){
+    FILE *read = fopen("database", "rb");
+    FILE *write = fopen("out", "wb+");
+    student_t student;
+    student_t minor;
+
+    /* 
+    * * Leer primer estudiante 
+    */
+
+    fread(&minor, sizeof(student_t), 1, read);
+    fscanf(read, "\n");
+
+    while(!feof(read)){
+        fread(&student, sizeof(student_t), 1, read);
+        fscanf(read, "\n");
+        if(strcmp(minor.name, student.name) > 0){
+            minor = student;
+        }
+    }
+    fwrite(&student, sizeof(student_t), 1, write);
+    fclose(read);
+    fclose(write);
 }
