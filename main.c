@@ -13,10 +13,7 @@ typedef struct{
     float average;
 } student_t;
 
-void search_bachelor(bool *db);
-void search_year(bool *db);
-void search_name(bool *db);
-void search_average(bool *db);
+void search(bool *db, int option);
 void save_data(bool db);
 void print(bool data);
 void add_student();
@@ -37,7 +34,7 @@ option = 1;
 bool database = true;
 
 while(option != 10){
-    printf("\n%s\n1 : Buscar\n2 : Agregar Alumno\n3 : Eliminar Alumno\n7 : Imprimir Lista de Alumnos\n8 : Imprimir Datos\n9 : Ordenar\n10 : Salir\n\n", database ? "" : "0 : Reiniciar Filtro de Busqueda");
+    printf("\n1 : Buscar\n2 : Agregar Alumno\n3 : Eliminar Alumno\n7 : Imprimir Lista de Alumnos\n8 : Imprimir Datos\n9 : Ordenar\n10 : Salir\n\n");
 
     scanf("%s", str_option);
     option = atoi(str_option);
@@ -48,37 +45,37 @@ while(option != 10){
     printf("\n");
 
     switch(option){
-        case 0:
-            if(!database){
-                printf("Reiniciando el Filtro\n");
-                database = true;
-            }else{
-                printf("Opcion no valida\n");
-            }
-            continue;
-
         case 1:
-            printf("¿Que tipo de busqueda desea realizar?\n1 : Carrera\n2 : Año\n3 : Promedio\n4 : Nombre\n5 : Regresar\n");
+            printf("¿Que tipo de busqueda desea realizar?\n1 : Carrera\n2 : Nombre\n3 : Año\n4 : Promedio\n5 : Regresar\n%s", database ? "" : "6 : Reiniciar Filtro de Busqueda\n\n");
             scanf("%d", &option);
             switch(option){
                 case 1:
                     printf("\nBusqueda por carrera\n");
-                    search_bachelor(&database);
+                    search(&database, 2);
                     break;
                 case 2:
-                    printf("\nBusqueda por año\n");
-                    search_year(&database);
+                    printf("\nBusqueda por nombre\n");
+                    search(&database, 1);
                     break;
+
                 case 3:
-                    printf("\nBusqueda por promedio\n");
-                    search_average(&database);
+                    printf("\nBusqueda por año\n");
+                    search(&database, 3);
                     break;
                 case 4:
-                    printf("\nBusqueda por nombre\n");
-                    search_name(&database);
+                    printf("\nBusqueda por promedio\n");
+                    search(&database, 4);
                     break;
                 case 5:
                     printf("\nRegresando...\n");
+                    break;
+                case 6:
+                    if(!database){
+                        printf("Reiniciando el Filtro\n");
+                        database = true;
+                    }else{
+                        printf("No hay filtro activo\n");
+                    }
                     break;
                 default:
                     printf("\nOpcion no valida\n");
@@ -124,62 +121,6 @@ while(option != 10){
     return 0;
 }
 
-/*
-* * Buscar por Nombre
-*/
-
-void search_name(bool *db){
-    char name[30];
-    FILE *read = *db ? fopen("database", "rb") : fopen("data", "rb");
-
-    if(!read){
-        printf("No se encontraron datos almacenados\n");
-        return;
-    }
-    
-    printf("Ingrese el nombre del alumno: ");
-    scanf("%s", name);
-
-    
-    if(*db){
-        *db = false;
-    }
-
-    FILE *write = fopen("out", "wb+");
-    
-    
-    student_t student;
-    
-    bool found = false;
-
-
-    while(!feof(read)){
-        fread(&student, sizeof(student_t), 1, read);
-        fscanf(read, "\n");
-
-        if(strcasecmp(student.name, name) == 0){
-
-            //fprintf(write, "%s%d  %s  %d  %.2f\n", student.name, student.key, student.bachelor, student.year, student.average);
-            
-            fwrite(&student, sizeof(student_t), 1, write);
-            printf("%s  %d  %s  %d  %.2f\n", student.name, student.key, student.bachelor, student.year, student.average);
-        
-            found = true;
-        }
-    }
-
-    if(!found){
-        printf("No se encontro alumnos con ese nombre\n");
-    }
-
-    fclose(read);
-    fclose(write);
-
-    save_data(false);
-}
-
-
-
 void search(bool *db, int option){
     char name[30];
     FILE *read = *db ? fopen("database", "rb") : fopen("data", "rb");
@@ -189,23 +130,41 @@ void search(bool *db, int option){
         return;
     }
     
-    printf("Ingrese el nombre de/los alumnos: ");
-    printf("Ingrese la carrera: ");
-    printf("Ingrese el año: ");
 
 
 
-    printf("No se encontro la generacion");
-    printf("\n");
-
+    switch(option){
+        case 1:
+            printf("Ingrese el nombre de/los alumnos: ");
+            break;
+        case 2:
+            printf("Ingrese la carrera: ");
+            break;
+        case 3:
+            printf("Ingrese el año: ");
+            break;
+        case 4:
+            printf("Ingrese el promedio minimo: ");
+            break;
+    }
 
 
     scanf("%s", name);
-    int year = atoi(name);
+    float number = atof(name);
 
-    printf("\nEstudiantes llamados %s\n\n", name);
-    printf("\nEstudiantes de %s\n\n", name);
-    printf("\nEstudiantes de %d\n", year);
+    switch(option){
+        case 1:
+            printf("\nEstudiantes llamados %s\n\n", name);
+            break;
+        case 2:
+        case 3:
+            printf("\nEstudiantes de %s\n\n", name);
+            break;
+        case 4:
+            printf("\nEstudiantes con promedio igual o mayor a %.2f\n\n", number);
+            break;
+    }
+    
     
     if(*db){
         *db = false;
@@ -240,168 +199,29 @@ void search(bool *db, int option){
                 }
                 break;
             case 3:
-                if(student.year == year){
+                if(student.year == (int)number){
                     fwrite(&student, sizeof(student_t), 1, write);
                     printf("%s  %d  %s  %d  %.2f\n", student.name, student.key, student.bachelor, student.year, student.average);
                     found = true;
                 }
                 break;
-
+            case 4:
+                if(student.average >= number){
+                    //fprintf(write, "%s  %d  %s  %d  %.2f\n", student.name, student.key, student.bachelor, student.year, student.average);
+                    fwrite(&student, sizeof(student_t), 1, write);
+                    printf("%s  %d  %s  %d  %.2f\n", student.name, student.key, student.bachelor, student.year, student.average);
+                    found = true;
+                }
+                break;
+            default:
+                break;
         }
     }
 
     if(!found){
-        printf("No se encontraron resultados de su busqueda\n");
+        printf("No se encontraron resultados de su busqueda\n\nReiniciando Filtros...\n");
+        *db = true;
     }
-
-    fclose(read);
-    fclose(write);
-
-    save_data(false);
-}
-
-
-
-
-/*
-* * Buscar por carrera
-*/
-
-void search_bachelor(bool *db){
-    char name[30];
-    
-    printf("Ingrese el nombre de la carrera: ");
-    scanf("%s", name);
-
-    FILE *read = *db ? fopen("database", "rb") : fopen("data", "rb");
-    
-    if(*db){
-        *db = false;
-    }
-
-    FILE *write = fopen("out", "wb+");
-    
-    
-    student_t student;
-    
-    bool found = false;
-
-    printf("\nEstudiantes de %s\n\n", name);
-
-    while(!feof(read)){
-        //fscanf(read, "%s%d%s%d%f\n", student.name, &student.key, student.bachelor, &student.year, &student.average);
-        fread(&student, sizeof(student_t), 1, read);
-        fscanf(read, "\n");
-        if(strcasecmp(student.bachelor, name) == 0){
-    
-            //fprintf(write, "%s  %d  %s  %d  %.2f\n", student.name, student.key, student.bachelor, student.year, student.average);
-
-            fwrite(&student, sizeof(student_t), 1, write);
-            printf("%s  %d  %s  %d  %.2f\n", student.name, student.key, student.bachelor, student.year, student.average);
-        
-            found = true;
-        }
-    }
-
-    if(!found){
-        printf("\bNo se encontro la carrera\n");
-    }
-
-    fclose(read);
-    fclose(write);
-
-    save_data(false);
-}
-
-/*
-* * Buscar por generacion
-*/
-
-void search_year(bool *db){
-    int year;
-    
-    printf("Ingrese el año: ");
-    scanf("%d", &year);
-
-    FILE *read = *db ? fopen("database", "rb") : fopen("data", "rb");
-    FILE *write = fopen("out", "wb+");
-    
-    if(*db){
-        *db = false;
-    }
-    
-    student_t student;
-    
-    bool found = false;
-
-    printf("\nEstudiantes de %d\n", year);
-    while(!feof(read)){
-        //fscanf(read, "%s%d%s%d%f\n", student.name, &student.key, student.bachelor, &student.year, &student.average);
-        fread(&student, sizeof(student_t), 1, read);
-        fscanf(read, "\n");
-
-        if(student.year == year){
-            //fprintf(write, "%s  %d  %s  %d  %.2f\n", student.name, student.key, student.bachelor, student.year, student.average);
-            fwrite(&student, sizeof(student_t), 1, write);
-            printf("%s  %d  %s  %d  %.2f\n", student.name, student.key, student.bachelor, student.year, student.average);
-        
-            found = true;
-        }
-    }
-
-    if(!found){
-        printf("No se encontro la generacion");
-    }
-
-    printf("\n");
-
-    fclose(read);
-    fclose(write);
-
-    save_data(false);
-}
-
-/*
-* * Buscar por promedio
-*/
-
-void search_average(bool *db){
-    float min;
-    
-    printf("Ingrese el promedio minimo: ");
-    scanf("%f", &min);
-
-    FILE *read = *db ? fopen("database", "rb") : fopen("data", "rb");
-    FILE *write = fopen("out", "wb+");
-    
-    if(*db){
-        *db = false;
-    }
-    
-    student_t student;
-    
-    bool found = false;
-
-    printf("\nEstudiantes con promedio igual o mayor a %.2f\n\n", min);
-    while(!feof(read)){
-        //fscanf(read, "%s%d%s%d%f\n", student.name, &student.key, student.bachelor, &student.year, &student.average);
-        fread(&student, sizeof(student_t), 1, read);
-        fscanf(read, "\n");
-
-        if((int) student.average >= (int) min){
-            //fprintf(write, "%s  %d  %s  %d  %.2f\n", student.name, student.key, student.bachelor, student.year, student.average);
-            fwrite(&student, sizeof(student_t), 1, write);
-            printf("%s  %d  %s  %d  %.2f\n", student.name, student.key, student.bachelor, student.year, student.average);
-            found = true;
-        }
-
-    }
-
-    if(!found){
-        printf("No se encontro alumnos con con promedio igual o mayor a %.2f", min);
-    }
-
-    printf("\n");
 
     fclose(read);
     fclose(write);
