@@ -18,9 +18,12 @@ void search_year(bool *db);
 void search_name(bool *db);
 void search_average(bool *db);
 void save_data(bool db);
-void print_db();
+void print_db(bool data);
 void add_student();
 void remove_student();
+void sort_list();
+void duplicate_db();
+bool is_on_data(char *name);
 
 int main(){
 
@@ -33,8 +36,8 @@ int option;
 option = 1;
 bool database = true;
 
-while(option != 8){
-    printf("\n%s\n1 : Buscar por Carrera\n2 : Buscar por Año\n3 : Buscar por Promedio\n4 : Buscar por nombre\n5 : Agregar Alumno\n6 : Eliminar Alumno\n7 : Imprimir Lista de Alumnos\n8 : Salir\n\n", database ? "" : "0 : Reiniciar Filtro de Busqueda");
+while(option != 10){
+    printf("\n%s\n1 : Buscar por Carrera\n2 : Buscar por Año\n3 : Buscar por Promedio\n4 : Buscar por nombre\n5 : Agregar Alumno\n6 : Eliminar Alumno\n7 : Imprimir Lista de Alumnos\n8 : Imprimir Datos\n9 : Ordenar\n10 : Salir\n\n", database ? "" : "0 : Reiniciar Filtro de Busqueda");
 
     scanf("%d", &option);
 
@@ -78,10 +81,16 @@ while(option != 8){
 
         case 7:
             printf("Imprimir todos los alumnos\n");
-            print_db();
+            print_db(0);
             continue;
-
-        case 8: 
+        case 8:
+            printf("Imprimir datos\n");
+            print_db(1);
+            continue;
+        case 9: 
+            sort_list();
+            continue;
+        case 10: 
             printf("Cerrando...\n");
             continue;
         default:
@@ -316,11 +325,11 @@ void save_data(bool db){
     fclose(write);
 }
 
-void print_db(){
-    FILE *fp = fopen("database", "rb");
+void print_db(bool data){
+    FILE *fp = !data ? fopen("database", "rb") : fopen("out", "rb");
     student_t student;
     int count = 1;
-    printf("\nBase de datos\n\n");
+    printf("\n%s\n\n", data ? "Datos de la busqueda" : "Base de datos");
 
     while(!feof(fp)){
         fread(&student, sizeof(student_t), 1, fp);
@@ -394,27 +403,82 @@ void remove_student(){
     }
 }
 
-void order_list(){
-    FILE *read = fopen("database", "rb");
-    FILE *write = fopen("out", "wb+");
+void sort_list(){
+
+    duplicate_db();
+
+    FILE *data = fopen("out", "rb+");
     student_t student;
     student_t minor;
 
-    /* 
-    * * Leer primer estudiante 
-    */
+    fseek(data, 0, SEEK_END);
 
-    fread(&minor, sizeof(student_t), 1, read);
-    fscanf(read, "\n");
+    long end = ftell(data), pos = 0, curr;
+    rewind(data);
+
+    while(ftell(data) <= end - sizeof(student_t)){
+        fread(&minor,sizeof(student_t), 1, data);
+        pos = ftell(data);
+        while(ftell(data) < end){
+            fread(&student, sizeof(student_t), 1, data);
+            printf("Loop : %s\n", student.name);
+            if(strcasecmp(minor.name, student.name) > 1){
+                curr = ftell(data) - sizeof(student_t);
+                fseek(data, pos - sizeof(student_t), SEEK_SET);
+                fwrite(&student, sizeof(student_t), 1, data);
+                
+                fseek(data, curr, SEEK_SET);
+                fwrite(&minor, sizeof(student_t), 1, data);
+
+                minor = student;
+            }
+        }
+        //printf("Minor : %s\n", student.name);
+
+        fseek(data, pos, SEEK_SET);
+    }
+    fclose(data);
+
+    save_data(false);
+}
+
+void swap(student_t *a, student_t *b){
+    student_t c;
+    c = *a;
+    *a = *b;
+    *b = c;
+}
+
+bool is_on_data(char *name){
+    FILE *fp = fopen("out", "rb");
+    student_t student;
+
+    while(!feof(fp)){
+        fread(&student, sizeof(student_t), 1, fp);
+        fscanf(fp, "\n");
+
+        if(strcasecmp(student.name, name) == 0){
+            fclose(fp);
+            return true;
+        }
+    }
+    fclose(fp);
+    return false;
+}
+
+void duplicate_db(){
+    FILE *read = fopen("database", "rb");
+    FILE *write = fopen("out", "wb+");
+
+    student_t student;
 
     while(!feof(read)){
         fread(&student, sizeof(student_t), 1, read);
+        fwrite(&student, sizeof(student_t), 1, write);
+
         fscanf(read, "\n");
-        if(strcmp(minor.name, student.name) > 0){
-            minor = student;
-        }
     }
-    fwrite(&student, sizeof(student_t), 1, write);
+
     fclose(read);
     fclose(write);
 }
