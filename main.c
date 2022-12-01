@@ -37,7 +37,7 @@ option = 1;
 bool database = true;
 
 while(option != 10){
-    printf("\n%s\n1 : Buscar por Carrera\n2 : Buscar por Año\n3 : Buscar por Promedio\n4 : Buscar por nombre\n5 : Agregar Alumno\n6 : Eliminar Alumno\n7 : Imprimir Lista de Alumnos\n8 : Imprimir Datos\n9 : Ordenar\n10 : Salir\n\n", database ? "" : "0 : Reiniciar Filtro de Busqueda");
+    printf("\n%s\n1 : Buscar\n2 : Agregar Alumno\n3 : Eliminar Alumno\n7 : Imprimir Lista de Alumnos\n8 : Imprimir Datos\n9 : Ordenar\n10 : Salir\n\n", database ? "\0" : "0 : Reiniciar Filtro de Busqueda");
 
     scanf("%d", &option);
 
@@ -50,31 +50,40 @@ while(option != 10){
             continue;
 
         case 1:
-            printf("Buscar por Carrera\n");
-            search_bachelor(&database);
+            printf("¿Que tipo de busqueda desea realizar?\n1 : Carrera\n2 : Año\n3 : Promedio\n4 : Nombre\n5 : Regresar\n");
+            scanf("%d", &option);
+            switch(option){
+                case 1:
+                    printf("\nBusqueda por carrera\n");
+                    search_bachelor(&database);
+                    break;
+                case 2:
+                    printf("\nBusqueda por año\n");
+                    search_year(&database);
+                    break;
+                case 3:
+                    printf("\nBusqueda por promedio\n");
+                    search_average(&database);
+                    break;
+                case 4:
+                    printf("\nBusqueda por nombre\n");
+                    search_name(&database);
+                    break;
+                case 5:
+                    printf("\nRegresando...\n");
+                    break;
+                default:
+                    printf("\nOpcion no valida\n");
+                    break;
+            }
             continue;
 
         case 2:
-            printf("Buscar por Año\n");
-            search_year(&database);
-            continue;
-
-        case 3:
-            printf("Buscar por Promedio\n");
-            search_average(&database);
-            continue;
-
-        case 4:
-            printf("Buscar por Nombre\n");
-            search_name(&database);
-            continue;
-
-        case 5:
             printf("Agregar Alumno\n");
             add_student();
             continue;
 
-        case 6:
+        case 3:
             printf("Eliminar Alumno\n");
             remove_student();
             continue;
@@ -118,9 +127,6 @@ void search_name(bool *db){
     
     printf("Ingrese el nombre del alumno: ");
     scanf("%s", name);
-
-    
-    //printf("\nBuscando alumnos llamados %s...\n", name);
 
     FILE *read = *db ? fopen("database", "rb") : fopen("data", "rb");
     
@@ -339,16 +345,11 @@ void print_db(bool data){
 }
 
 void add_student(){
-    FILE *db = fopen("database", "rb");
-    FILE *out = fopen("out", "wb+");
+    duplicate_db();
+    FILE *out = fopen("out", "ab");
 
     student_t student;
 
-    while(!feof(db)){
-        fread(&student, sizeof(student_t), 1, db);
-        fscanf(db, "\n");
-        fwrite(&student, sizeof(student_t), 1, out);
-    }
 
     printf("Nombre: ");
     scanf("%s", student.name);
@@ -362,7 +363,6 @@ void add_student(){
     scanf("%f", &student.average);
     fwrite(&student, sizeof(student_t), 1, out);
     fclose(out);
-    fclose(db);
 
     save_data(true);
     printf("\nEstudiante agregado\n");
@@ -421,8 +421,8 @@ void sort_list(){
         pos = ftell(data);
         while(ftell(data) < end){
             fread(&student, sizeof(student_t), 1, data);
-            printf("Loop : %s\n", student.name);
-            if(strcasecmp(minor.name, student.name) > 1){
+            
+            if(strcasecmp(minor.name, student.name) > 0){
                 curr = ftell(data) - sizeof(student_t);
                 fseek(data, pos - sizeof(student_t), SEEK_SET);
                 fwrite(&student, sizeof(student_t), 1, data);
@@ -439,7 +439,18 @@ void sort_list(){
     }
     fclose(data);
 
-    save_data(false);
+    printf("\nLista ordenada\n");
+
+
+    printf("Desea guardar en la base de datos? (s/n): ");
+
+    char c;
+
+    scanf("%c", &c);
+
+    bool save = c == 's' ? true : false;
+
+    save_data(save);
 }
 
 void swap(student_t *a, student_t *b){
