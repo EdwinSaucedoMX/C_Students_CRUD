@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "cstdio": "c"
+        "concepts": "c",
+        "type_traits": "c",
+        "new": "c"
     }
 }

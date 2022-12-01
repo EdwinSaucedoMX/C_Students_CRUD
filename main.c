@@ -18,7 +18,7 @@ void search_year(bool *db);
 void search_name(bool *db);
 void search_average(bool *db);
 void save_data(bool db);
-void print_db(bool data);
+void print(bool data);
 void add_student();
 void remove_student();
 void sort_list();
@@ -32,21 +32,29 @@ int main(){
 */
 
 int option;
-
+char str_option[30];
 option = 1;
 bool database = true;
 
 while(option != 10){
-    printf("\n%s\n1 : Buscar\n2 : Agregar Alumno\n3 : Eliminar Alumno\n7 : Imprimir Lista de Alumnos\n8 : Imprimir Datos\n9 : Ordenar\n10 : Salir\n\n", database ? "\0" : "0 : Reiniciar Filtro de Busqueda");
+    printf("\n%s\n1 : Buscar\n2 : Agregar Alumno\n3 : Eliminar Alumno\n7 : Imprimir Lista de Alumnos\n8 : Imprimir Datos\n9 : Ordenar\n10 : Salir\n\n", database ? "" : "0 : Reiniciar Filtro de Busqueda");
 
-    scanf("%d", &option);
+    scanf("%s", str_option);
+    option = atoi(str_option);
+    if(option == 0){
+        option = str_option[0] == '0' ? option : -1;
+    }
 
     printf("\n");
 
     switch(option){
         case 0:
-            printf("Reiniciando el Filtro\n");
-            database = true;
+            if(!database){
+                printf("Reiniciando el Filtro\n");
+                database = true;
+            }else{
+                printf("Opcion no valida\n");
+            }
             continue;
 
         case 1:
@@ -79,7 +87,7 @@ while(option != 10){
             continue;
 
         case 2:
-            printf("Agregar Alumno\n");
+            printf("Agregar Alumno/s\n");
             add_student();
             continue;
 
@@ -90,11 +98,11 @@ while(option != 10){
 
         case 7:
             printf("Imprimir todos los alumnos\n");
-            print_db(0);
+            print(0);
             continue;
         case 8:
             printf("Imprimir datos\n");
-            print_db(1);
+            print(1);
             continue;
         case 9: 
             sort_list();
@@ -109,11 +117,9 @@ while(option != 10){
 }
 
     //Limpiar Archivos
-    FILE *tmp;
-    tmp = fopen("data", "wb+");
-    fclose(tmp);
-    tmp = fopen("out", "wb+");
-    fclose(tmp);
+    int rm;
+    rm = remove("data");
+    rm = remove("out");
 
     return 0;
 }
@@ -124,11 +130,16 @@ while(option != 10){
 
 void search_name(bool *db){
     char name[30];
+    FILE *read = *db ? fopen("database", "rb") : fopen("data", "rb");
+
+    if(!read){
+        printf("No se encontraron datos almacenados\n");
+        return;
+    }
     
     printf("Ingrese el nombre del alumno: ");
     scanf("%s", name);
 
-    FILE *read = *db ? fopen("database", "rb") : fopen("data", "rb");
     
     if(*db){
         *db = false;
@@ -166,6 +177,91 @@ void search_name(bool *db){
 
     save_data(false);
 }
+
+
+
+void search(bool *db, int option){
+    char name[30];
+    FILE *read = *db ? fopen("database", "rb") : fopen("data", "rb");
+
+    if(!read){
+        printf("No se encontraron datos almacenados\n");
+        return;
+    }
+    
+    printf("Ingrese el nombre de/los alumnos: ");
+    printf("Ingrese la carrera: ");
+    printf("Ingrese el año: ");
+
+
+
+    printf("No se encontro la generacion");
+    printf("\n");
+
+
+
+    scanf("%s", name);
+    int year = atoi(name);
+
+    printf("\nEstudiantes llamados %s\n\n", name);
+    printf("\nEstudiantes de %s\n\n", name);
+    printf("\nEstudiantes de %d\n", year);
+    
+    if(*db){
+        *db = false;
+    }
+
+    FILE *write = fopen("out", "wb+");
+    
+    
+    student_t student;
+    
+    bool found = false;
+
+
+    while(!feof(read)){
+        fread(&student, sizeof(student_t), 1, read);
+        fscanf(read, "\n");
+
+
+        switch(option){
+            case 1:
+                if(strcasecmp(student.name, name) == 0){
+                    fwrite(&student, sizeof(student_t), 1, write);
+                    printf("%s  %d  %s  %d  %.2f\n", student.name, student.key, student.bachelor, student.year, student.average);
+                    found = true;
+                }
+                break;
+            case 2:
+                if(strcasecmp(student.bachelor, name) == 0){
+                    fwrite(&student, sizeof(student_t), 1, write);
+                    printf("%s  %d  %s  %d  %.2f\n", student.name, student.key, student.bachelor, student.year, student.average);
+                    found = true;
+                }
+                break;
+            case 3:
+                if(student.year == year){
+                    fwrite(&student, sizeof(student_t), 1, write);
+                    printf("%s  %d  %s  %d  %.2f\n", student.name, student.key, student.bachelor, student.year, student.average);
+                    found = true;
+                }
+                break;
+
+        }
+    }
+
+    if(!found){
+        printf("No se encontraron resultados de su busqueda\n");
+    }
+
+    fclose(read);
+    fclose(write);
+
+    save_data(false);
+}
+
+
+
 
 /*
 * * Buscar por carrera
@@ -331,11 +427,17 @@ void save_data(bool db){
     fclose(write);
 }
 
-void print_db(bool data){
+void print(bool data){
     FILE *fp = !data ? fopen("database", "rb") : fopen("out", "rb");
+    
+    if(!fp){
+        printf("No se encontraron datos almacenados\n");
+        return;
+    }
+    
     student_t student;
     int count = 1;
-    printf("\n%s\n\n", data ? "Datos de la busqueda" : "Base de datos");
+    printf("\n%s\n\n", data ? "Datos de busqueda" : "Base de datos");
 
     while(!feof(fp)){
         fread(&student, sizeof(student_t), 1, fp);
@@ -350,18 +452,23 @@ void add_student(){
 
     student_t student;
 
-
-    printf("Nombre: ");
-    scanf("%s", student.name);
-    printf("Matricula: ");
-    scanf("%d", &student.key);
-    printf("Carrera: ");
-    scanf("%s", student.bachelor);
-    printf("Generacion: ");
-    scanf("%d", &student.year);
-    printf("Promedio: ");
-    scanf("%f", &student.average);
-    fwrite(&student, sizeof(student_t), 1, out);
+    printf("¿Cuantos alumnos desea agregar? ");
+    int n;
+    scanf("%d", &n);
+    while(n--){
+        printf("Nombre: ");
+        scanf("%s", student.name);
+        printf("Matricula: ");
+        scanf("%d", &student.key);
+        printf("Carrera: ");
+        scanf("%s", student.bachelor);
+        printf("Generacion: ");
+        scanf("%d", &student.year);
+        printf("Promedio: ");
+        scanf("%f", &student.average);
+        fwrite(&student, sizeof(student_t), 1, out);
+    }
+    
     fclose(out);
 
     save_data(true);
