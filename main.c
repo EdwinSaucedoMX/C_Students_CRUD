@@ -334,6 +334,14 @@ void sort_list(){
 
     duplicate_db();
 
+    printf("¿Que tipo de ordenamiento desea realizar?\n1 : Nombre\n2 : Carrera\n3 : Matricula\n4 : Año\n5 : Promedio\n6 : Regresar\n\n");
+    int option;
+    scanf("%d", &option);
+
+    if(option == 6){
+        return;
+    }
+
     FILE *data = fopen("out", "rb+");
     student_t student;
     student_t minor;
@@ -342,25 +350,101 @@ void sort_list(){
 
     long end = ftell(data), pos = 0, curr;
     rewind(data);
+    char type[30];
 
+    switch(option){
+        case 1:
+            strcpy(type, "Nombre");
+            break;
+        case 2:
+            strcpy(type, "Carrera");
+            break;
+        case 3:
+            strcpy(type, "Matricula");
+            break;
+        case 4:
+            strcpy(type, "Generacion");
+            break;
+        case 5:
+            strcpy(type, "Promedio");
+            break;
+        default:
+            break;
+    }
+
+    printf("Ordenando por %s", type);
     while(ftell(data) <= end - sizeof(student_t)){
         fread(&minor,sizeof(student_t), 1, data);
         pos = ftell(data);
         while(ftell(data) < end){
             fread(&student, sizeof(student_t), 1, data);
             
-            if(strcasecmp(minor.name, student.name) > 0){
-                curr = ftell(data) - sizeof(student_t);
-                fseek(data, pos - sizeof(student_t), SEEK_SET);
-                fwrite(&student, sizeof(student_t), 1, data);
-                
-                fseek(data, curr, SEEK_SET);
-                fwrite(&minor, sizeof(student_t), 1, data);
+            switch(option){
+                case 1: 
+                    if(strcasecmp(minor.name, student.name) > 0){
+                    curr = ftell(data) - sizeof(student_t);
+                    fseek(data, pos - sizeof(student_t), SEEK_SET);
+                    fwrite(&student, sizeof(student_t), 1, data);
+                    
+                    fseek(data, curr, SEEK_SET);
+                    fwrite(&minor, sizeof(student_t), 1, data);
 
-                minor = student;
+                    minor = student;
+                    }
+                    break;
+                case 2: 
+                    if(strcasecmp(minor.bachelor, student.bachelor) > 0){
+                    curr = ftell(data) - sizeof(student_t);
+                    fseek(data, pos - sizeof(student_t), SEEK_SET);
+                    fwrite(&student, sizeof(student_t), 1, data);
+                    
+                    fseek(data, curr, SEEK_SET);
+                    fwrite(&minor, sizeof(student_t), 1, data);
+
+                    minor = student;
+                    }
+                    break;
+                case 3: 
+                    if(minor.key > student.key){
+                    curr = ftell(data) - sizeof(student_t);
+                    fseek(data, pos - sizeof(student_t), SEEK_SET);
+                    fwrite(&student, sizeof(student_t), 1, data);
+                    
+                    fseek(data, curr, SEEK_SET);
+                    fwrite(&minor, sizeof(student_t), 1, data);
+
+                    minor = student;
+                    }
+                    break;
+                case 4: 
+                    if(minor.year > student.year){
+                    curr = ftell(data) - sizeof(student_t);
+                    fseek(data, pos - sizeof(student_t), SEEK_SET);
+                    fwrite(&student, sizeof(student_t), 1, data);
+                    
+                    fseek(data, curr, SEEK_SET);
+                    fwrite(&minor, sizeof(student_t), 1, data);
+
+                    minor = student;
+                    }
+                    break;
+                case 5: 
+                    if(minor.average > student.average){
+                    curr = ftell(data) - sizeof(student_t);
+                    fseek(data, pos - sizeof(student_t), SEEK_SET);
+                    fwrite(&student, sizeof(student_t), 1, data);
+                    
+                    fseek(data, curr, SEEK_SET);
+                    fwrite(&minor, sizeof(student_t), 1, data);
+
+                    minor = student;
+                    }
+                    break;
+                default: 
+                    break;
             }
+            
         }
-        //printf("Minor : %s\n", student.name);
 
         fseek(data, pos, SEEK_SET);
     }
@@ -372,8 +456,8 @@ void sort_list(){
     printf("Desea guardar en la base de datos? (s/n): ");
 
     char c;
-
-    scanf("%c", &c);
+    
+    scanf(" %c", &c);
 
     bool save = c == 's' ? true : false;
 
