@@ -5,3 +5,4 @@ db_bckp
 test.c
 test
 test_copy.c
+tmp.c
