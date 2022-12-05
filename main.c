@@ -262,7 +262,7 @@ void print(bool data){
     while(!feof(fp)){
         fread(&student, sizeof(student_t), 1, fp);
         fscanf(fp, "\n");
-        printf("%d:  %s  %d  %s  %d  %.2f\n", count++, student.name, student.key, student.bachelor, student.year, student.average);
+        printf("%-2d : %-15s %-6d %-15s %2d %.2f\n", count++, student.name, student.key, student.bachelor, student.year, student.average);
     }
 }
 
