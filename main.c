@@ -33,8 +33,8 @@ char str_option[30];
 option = 1;
 bool database = true;
 
-while(option != 10){
-    printf("\n1 : Buscar\n2 : Agregar Alumno\n3 : Eliminar Alumno\n7 : Imprimir Lista de Alumnos\n8 : Imprimir Datos\n9 : Ordenar\n10 : Salir\n\n");
+while(option != 7){
+    printf("\n1 : Buscar\n2 : Agregar Alumno\n3 : Eliminar Alumno\n4 : Imprimir Lista de Alumnos\n5 : Imprimir Datos\n6 : Ordenar\n7 : Salir\n\n");
 
     scanf("%s", str_option);
     option = atoi(str_option);
@@ -93,18 +93,18 @@ while(option != 10){
             remove_student();
             continue;
 
-        case 7:
+        case 4:
             printf("Imprimir todos los alumnos\n");
             print(0);
             continue;
-        case 8:
-            printf("Imprimir datos\n");
+        case 5:
+            printf("Imprimir ultima busqueda\n");
             print(1);
             continue;
-        case 9: 
+        case 6: 
             sort_list();
             continue;
-        case 10: 
+        case 7: 
             printf("Cerrando...\n");
             continue;
         default:
@@ -187,21 +187,21 @@ void search(bool *db, int option){
             case 1:
                 if(strcasecmp(student.name, name) == 0){
                     fwrite(&student, sizeof(student_t), 1, write);
-                    printf("%s  %d  %s  %d  %.2f\n", student.name, student.key, student.bachelor, student.year, student.average);
+                    printf("%-15s %-6d %-25s %-8d %.2f\n", student.name, student.key, student.bachelor, student.year, student.average);
                     found = true;
                 }
                 break;
             case 2:
                 if(strcasecmp(student.bachelor, name) == 0){
                     fwrite(&student, sizeof(student_t), 1, write);
-                    printf("%s  %d  %s  %d  %.2f\n", student.name, student.key, student.bachelor, student.year, student.average);
+                    printf("%-15s %-6d %-25s %-8d %.2f\n", student.name, student.key, student.bachelor, student.year, student.average);
                     found = true;
                 }
                 break;
             case 3:
                 if(student.year == (int)number){
                     fwrite(&student, sizeof(student_t), 1, write);
-                    printf("%s  %d  %s  %d  %.2f\n", student.name, student.key, student.bachelor, student.year, student.average);
+                    printf("%-15s %-6d %-25s %-8d %.2f\n", student.name, student.key, student.bachelor, student.year, student.average);
                     found = true;
                 }
                 break;
@@ -209,7 +209,7 @@ void search(bool *db, int option){
                 if(student.average >= number){
                     //fprintf(write, "%s  %d  %s  %d  %.2f\n", student.name, student.key, student.bachelor, student.year, student.average);
                     fwrite(&student, sizeof(student_t), 1, write);
-                    printf("%s  %d  %s  %d  %.2f\n", student.name, student.key, student.bachelor, student.year, student.average);
+                    printf("%-15s %-6d %-25s %-8d %.2f\n", student.name, student.key, student.bachelor, student.year, student.average);
                     found = true;
                 }
                 break;
@@ -262,7 +262,7 @@ void print(bool data){
     while(!feof(fp)){
         fread(&student, sizeof(student_t), 1, fp);
         fscanf(fp, "\n");
-        printf("%-2d : %-15s %-6d %-15s %2d %.2f\n", count++, student.name, student.key, student.bachelor, student.year, student.average);
+        printf("%-2d : %-15s %-6d %-25s %-8d %.2f\n", count++, student.name, student.key, student.bachelor, student.year, student.average);
     }
 }
 
